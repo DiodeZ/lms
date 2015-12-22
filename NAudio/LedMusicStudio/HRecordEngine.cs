@@ -18,14 +18,13 @@ namespace LedMusicStudio
         #region Constant
         private const int defaultSampleRate = 44100;
         const float sampleMinValue = 0f;
-        const float sampleMaxValue = 1.5f;
-        long sampleCount = 0;
-        int numSampleData = 4410;
+        const float sampleMaxValue = 5f;
+        int numSampleData = 441;
         #endregion
         public HRecordEngine()
         {
             sampleData = new Queue<float>();
-            for (int i = 0; i < numSampleData; i++)
+            for (int i = 0; i < numSampleData * 2; i++)
             {
                 sampleData.Enqueue(0);
             }
@@ -95,14 +94,16 @@ namespace LedMusicStudio
         {
             byte[] shts = new byte[4];
             float scale = sampleMaxValue - sampleMinValue;
-            for (int i = 0; i < e.BytesRecorded - 1; i += 1000)
+            for (int i = 0; i < e.BytesRecorded - 1; i += 100)
             {
                 shts[0] = e.Buffer[i];
                 shts[1] = e.Buffer[i + 1];
                 shts[2] = e.Buffer[i + 2];
                 shts[3] = e.Buffer[i + 3];
                 sampleData.Dequeue();
+                sampleData.Dequeue();
                 sampleData.Enqueue(BitConverter.ToInt32(shts, 0) * scale /Int32.MaxValue);
+                sampleData.Enqueue(0);
             }
             NotifyPropertyChanged("WaveformData");
         }

@@ -119,13 +119,13 @@ namespace LedMusicStudio
             {
                 recordButton.Content = "Start Record";
                 isRecording = false;
-                HRecordEngine.Instance.startRecord();
+                HRecordEngine.Instance.stopRecord();
             }
             else
             {
                 recordButton.Content = "Stop Record";
                 isRecording = true;
-                HRecordEngine.Instance.stopRecord();
+                HRecordEngine.Instance.startRecord();
 
             }
         }
