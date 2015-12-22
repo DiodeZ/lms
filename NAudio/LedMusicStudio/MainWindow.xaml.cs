@@ -30,7 +30,8 @@ namespace LedMusicStudio
             soundEngine.PropertyChanged += NAudioEngine_PropertyChanged;
 
             spectrumAnalyzer.RegisterSoundPlayer(soundEngine);
-            waveformTimeline.RegisterSoundPlayer(soundEngine);
+            HRecordEngine recordEngine = HRecordEngine.Instance;
+            waveformTimeline.RegisterSoundPlayer(recordEngine);
         }
 
         private void NAudioEngine_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -109,6 +110,26 @@ namespace LedMusicStudio
 
             NAudioEngine.Instance.OpenFile("E:\\ThoiDoiBeat-VA_4hheq_hq.mp3");
         }
+
+        bool isRecording = false;
+        private void recordButton_Click(object sender, RoutedEventArgs e)
+        {
+
+            if (isRecording)
+            {
+                recordButton.Content = "Start Record";
+                isRecording = false;
+                HRecordEngine.Instance.startRecord();
+            }
+            else
+            {
+                recordButton.Content = "Stop Record";
+                isRecording = true;
+                HRecordEngine.Instance.stopRecord();
+
+            }
+        }
+        /*
         #region recording
 
         WaveIn wi;
@@ -117,8 +138,8 @@ namespace LedMusicStudio
         double canW = 0;
         double plH = 0;
         double plW = 0;
-        List<byte> totalbytes;
-        Queue<Point> displaypts;
+        //List<byte> totalbytes;
+        //Queue<Point> displaypts;
         Queue<Int32> displaysht;
         long count = 0;
         int numtodisplay = 2205;
@@ -164,8 +185,8 @@ namespace LedMusicStudio
                 plH = pl.MaxHeight;
                 plW = pl.MaxWidth;
 
-                displaypts = new Queue<Point>();
-                totalbytes = new List<byte>();
+                //displaypts = new Queue<Point>();
+                //totalbytes = new List<byte>();
                 displaysht = new Queue<Int32>();
 
                 wi.StartRecording();
@@ -181,7 +202,7 @@ namespace LedMusicStudio
 
         void wi_DataAvailable(object sender, WaveInEventArgs e)
         {
-            totalbytes.AddRange(e.Buffer);
+            //totalbytes.AddRange(e.Buffer);
 
             byte[] shts = new byte[4];
 
@@ -224,5 +245,6 @@ namespace LedMusicStudio
             return p;
         }
         #endregion
+         */
     }
 }

@@ -9,14 +9,27 @@ using WPFSoundVisualizationLib;
 
 namespace LedMusicStudio
 {
-    class HRecordEngine : INotifyPropertyChanged, ISpectrumPlayer, IWaveformPlayer
+    class HRecordEngine : INotifyPropertyChanged, IWaveformPlayer
     {
         private static HRecordEngine instance;
         private WaveIn wi;
+        private bool isRecording;
+        Queue<float> sampleData;
         #region Constant
         private const int defaultSampleRate = 44100;
+        const float sampleMinValue = 0f;
+        const float sampleMaxValue = 1.5f;
+        long sampleCount = 0;
+        int numSampleData = 4410;
         #endregion
-
+        public HRecordEngine()
+        {
+            sampleData = new Queue<float>();
+            for (int i = 0; i < numSampleData; i++)
+            {
+                sampleData.Enqueue(0);
+            }
+        }
         #region Singleton Pattern
         public static HRecordEngine Instance
         {
@@ -44,6 +57,8 @@ namespace LedMusicStudio
         #region Public functions
         public bool startRecord(int deviceIndex = 0)
         {
+            if (isRecording) return true;
+
             try
             {
                 wi = new WaveIn();
@@ -57,11 +72,13 @@ namespace LedMusicStudio
             {
                 return false;
             }
+            isRecording = true;
             return true;
         }
 
         public bool stopRecord()
         {
+            if (!isRecording) return true;
             try
             {
                 wi.StopRecording();
@@ -70,12 +87,24 @@ namespace LedMusicStudio
             {
                 return false;
             }
+            isRecording = false;
             return true;
         }
         #endregion
         private void wi_DataAvailable(object sender, WaveInEventArgs e)
         {
-            throw new NotImplementedException();
+            byte[] shts = new byte[4];
+            float scale = sampleMaxValue - sampleMinValue;
+            for (int i = 0; i < e.BytesRecorded - 1; i += 1000)
+            {
+                shts[0] = e.Buffer[i];
+                shts[1] = e.Buffer[i + 1];
+                shts[2] = e.Buffer[i + 2];
+                shts[3] = e.Buffer[i + 3];
+                sampleData.Dequeue();
+                sampleData.Enqueue(BitConverter.ToInt32(shts, 0) * scale /Int32.MaxValue);
+            }
+            NotifyPropertyChanged("WaveformData");
         }
 
         private void wi_RecordingStopped(object sender, StoppedEventArgs e)
@@ -83,5 +112,58 @@ namespace LedMusicStudio
             wi.Dispose();
             wi = null;
         }
+        #region Implement IWaveformPlayer
+
+        public double ChannelPosition
+        {
+            get
+            {
+                return 0;
+            }
+            set
+            {
+                
+            }
+        }
+
+        public double ChannelLength
+        {
+            get { return 0; }
+        }
+
+        public float[] WaveformData
+        {
+            get { return sampleData.ToArray(); }
+        }
+
+        public TimeSpan SelectionBegin
+        {
+            get
+            {
+                return TimeSpan.Zero;
+            }
+            set
+            {
+                
+            }
+        }
+
+        public TimeSpan SelectionEnd
+        {
+            get
+            {
+                return TimeSpan.Zero;
+            }
+            set
+            {
+                
+            }
+        }
+
+        public bool IsPlaying
+        {
+            get { return isRecording; }
+        }
+        #endregion
     }
 }
